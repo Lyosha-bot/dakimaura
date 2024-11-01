@@ -1,0 +1,63 @@
+body {
+    position: relative;
+    top: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 50vh;
+
+    margin: 0 auto;
+}
+
+.promo-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+
+.promo-logo {
+    width: 30%;
+    height: auto;
+}
+
+.promo-phrase {
+    font-size: calc(10px + 1vw);
+    text-align: center;
+}
+
+.about-info {
+    display: flex;
+    justify-content: center;
+    align-items: start;
+
+    gap: 5%;
+
+    margin: 7vw 0;
+}
+
+.info-contacts {
+    flex: 2 0 0;
+}
+
+.info-address {
+    flex: 5 0 0;
+}
+
+.info-worktime {
+    flex: 2 0 0;
+}
+
+.info-title {
+    font-size: calc(15px + .5vw);
+    margin-bottom: 10px;
+}
+
+.info-data {
+    font-size: calc(10px + .5vw);
+}

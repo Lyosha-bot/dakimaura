@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dakimaura Admin</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    
+
+    form {
+        display: grid;
+        grid-template-columns: 100px;
+        padding: 20px;
+    }
+
+    .form-div {
+        margin-bottom: 20px;
+    }
+</style>
+<body>
+    <form action="" method="post">
+        <div class="form-div">
+            <label for="category">category</label>
+            <input type="text" name="category" required />
+        </div>
+        <div class="form-div">
+            <label for="name">name</label>
+            <input type="text" name="name" required />
+        </div>
+        <div class="form-div">
+            <label for="material">material</label>
+            <input type="text" name="material" required />
+        </div>
+        <div class="form-div">
+            <label for="brand">brand</label>
+            <input type="text" name="brand" required />
+        </div>
+        <div class="form-div">
+            <label for="produce_time">produce_time</label>
+            <input type="text" name="produce_time" required />
+        </div>
+        <div class="form-div">
+            <label for="image">image</label>
+            <input type="file" name="image" accept="image/png, image/jpg" required />
+        </div>
+
+        <input type="submit" value="Save">
+    </form>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

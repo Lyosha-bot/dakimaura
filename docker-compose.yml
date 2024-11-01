@@ -1,0 +1,57 @@
+
+services:
+
+    postgres:
+        image: postgres:alpine
+        container_name: postgres
+        environment:    
+            POSTGRES_DB: "dakimaura"
+            POSTGRES_USER: "admin"
+            POSTGRES_PASSWORD: "12345"
+        volumes:
+            - data:/var/lib/postgresql/data
+            - ./postgres/postgresql.conf:/etc/postgresql.conf
+            - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - "8071:5071"
+        command: postgres -c config_file=/etc/postgresql.conf
+
+    minio:
+        image: bitnami/minio
+        container_name: minio
+        environment:    
+            MINIO_ROOT_USER: "admin"
+            MINIO_ROOT_PASSWORD: "12345678"
+            MINIO_USE_SSL: "false"
+            MINIO_API_PORT_NUMBER: "8072"
+        volumes:
+            - images:/bitnami/minio/data
+        ports:
+            - "8072:8072"
+            - "9001:9001"
+
+    nginx:
+        image: nginx:alpine
+        container_name: nginx
+        build:
+            context: client
+            dockerfile: Dockerfile
+        ports:
+            - "8073:8073"
+
+    golang:
+        image: golang:alpine
+        container_name: golang
+        restart: unless-stopped
+        build:
+            context: server
+            dockerfile: Dockerfile
+        ports:
+            - "8074:8074"
+        depends_on:
+            - postgres
+            - minio
+
+volumes: 
+    data:
+    images:

@@ -1,4 +1,5 @@
-const endpoint = "http://localhost:8072/images/"
+const images_endpoint = "http://localhost:8073/images/"
+const api_endpoint = "http://localhost:8073/api/"
 const category_list = ["Новинки сезона","Милые котята"]
 
 const catalog = document.getElementsByClassName("catalog-section")[0]
@@ -7,7 +8,7 @@ let catalogHTML = ``
 
 async function GetCategory(category_name) {
     try {
-        const response = await fetch(`http://localhost:8074/get-category?category=${category_name}`, {
+        const response = await fetch(`${api_endpoint}get-category?category=${category_name}`, {
             method: 'GET'
         })
 
@@ -41,7 +42,7 @@ async function FillCatalog() {
             catalogHTML += `
                 <div class="selectable sub-catalog-card">
                     <a href="product.html">
-                        <img class="catalog-card-image" src="${endpoint}${product.image}" alt="dakimakura">
+                        <img class="catalog-card-image" src="${images_endpoint}${product.image}" alt="dakimakura">
                         <p class="catalog-card-name regular-font">${product.name}</p>
                         <p class="catalog-card-price medium-font">${product.price} руб.</p>
                     </a>

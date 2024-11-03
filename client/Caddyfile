@@ -1,0 +1,34 @@
+# The Caddyfile is an easy way to configure your Caddy web server.
+#
+# Unless the file starts with a global options block, the first
+# uncommented line is always the address of your site.
+#
+# To use your own domain name (with automatic HTTPS), first make
+# sure your domain's A/AAAA DNS records are properly pointed to
+# this machine's public IP, then replace ":80" below with your
+# domain name.
+
+http://localhost:8073 {
+	# Set this path to your site's directory.
+	root * /srv
+
+	# Enable the static file server.
+	file_server
+
+	handle_path /*.html {
+		root * /srv/www
+	}
+
+	handle_path /images/* {
+		reverse_proxy minio:8072
+		uri replace / /images/
+	}
+
+	handle_path /api/* {
+		reverse_proxy golang:8074
+	}
+
+}
+
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile

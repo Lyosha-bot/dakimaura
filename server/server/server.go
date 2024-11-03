@@ -55,12 +55,7 @@ func (s *Server) Process() error {
 
 	log.Println("Server is up")
 
-	//c := cors.New(cors.Options{
-	//	AllowedOrigins: []string{"localhost:8073", "nginx:8073"},
-	//	AllowedMethods: []string{"GET", "POST"},
-	//})
-
-	err := http.ListenAndServe(":"+s.port, cors.Default().Handler(router))
+	err := http.ListenAndServe(":"+s.port, cors.AllowAll().Handler(router))
 	return err
 }
 

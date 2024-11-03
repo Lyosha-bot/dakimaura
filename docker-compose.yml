@@ -30,9 +30,9 @@ services:
             - "8072:8072"
             - "9001:9001"
 
-    nginx:
-        image: nginx
-        container_name: nginx
+    caddy:
+        image: caddy
+        container_name: caddy
         build:
             context: client
             dockerfile: Dockerfile

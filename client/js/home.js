@@ -1,10 +1,12 @@
-const images_endpoint = "http://localhost:8073/images/"
-const api_endpoint = "http://localhost:8073/api/"
-const category_list = ["Новинки сезона","Милые котята"]
+const images_endpoint = "http://localhost:8073/images/";
+const api_endpoint = "http://localhost:8073/api/";
+const category_list = ["Новинки сезона"];
 
-const catalog = document.getElementsByClassName("catalog-section")[0]
+const catalog = document.getElementsByClassName("catalog-section")[0];
 
-let catalogHTML = ``
+function formatNumber(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
 
 async function GetCategory(category_name) {
     try {
@@ -15,7 +17,7 @@ async function GetCategory(category_name) {
         if (response.ok) {
             const result = await response.json();
             console.log('Success:', result);
-            return result
+            return result;
         } else {
             console.error('Server error:', response.statusText);
         }
@@ -27,7 +29,8 @@ async function GetCategory(category_name) {
 async function FillCatalog() {
     for (let i = 0; i < category_list.length; i++) {
         let category_name = category_list[i];
-        catalogHTML +=`
+        let card = ``
+        card +=`
         <div class="catalog-sub-section">
             <h3 class="regular-font sub-catalog-name">
                 ${category_name}
@@ -39,24 +42,24 @@ async function FillCatalog() {
         console.log("Get products: ", products);
         for (let j = 0; j < products.length; j++) {
             let product = products[j];
-            catalogHTML += `
+            card += `
                 <div class="selectable sub-catalog-card">
-                    <a href="product.html">
+                    <a href="product.html?id=${product.id}">
                         <img class="catalog-card-image" src="${images_endpoint}${product.image}" alt="dakimakura">
                         <p class="catalog-card-name regular-font">${product.name}</p>
-                        <p class="catalog-card-price medium-font">${product.price} руб.</p>
+                        <p class="catalog-card-price medium-font">${formatNumber(product.price)} руб.</p>
                     </a>
                 </div>
             `;
         }
         
-        catalogHTML +=`
+        card +=`
             </div>
         </div>
         `;
-    }
 
-    catalog.innerHTML = catalogHTML;
+        catalog.innerHTML += card;
+    }
 }
 
 FillCatalog();

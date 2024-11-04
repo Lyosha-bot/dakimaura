@@ -31,7 +31,7 @@ services:
             - "9001:9001"
 
     caddy:
-        image: caddy
+        # image: caddy
         container_name: caddy
         build:
             context: client
@@ -40,7 +40,7 @@ services:
             - "8073:8073"
 
     golang:
-        image: golang:alpine
+        # image: golang:alpine
         container_name: golang
         restart: unless-stopped
         build:

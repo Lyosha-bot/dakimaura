@@ -91,7 +91,7 @@ func (c *Client) GetProduct(id uint64) (*storage.Product, error) {
 	row := conn.QueryRow(ctx, storage.ProductGetQuery, id)
 
 	var data storage.Product
-	err = row.Scan(&id, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
+	err = row.Scan(&data.ID, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
 
 	if err != nil {
 		return nil, lib.WrapErr("row scan:", err)
@@ -117,10 +117,9 @@ func (c *Client) GetCategory(category string) ([]storage.Product, error) {
 
 	res := make([]storage.Product, 0, 1)
 
-	var id uint
 	var data storage.Product
 	for rows.Next() {
-		err = rows.Scan(&id, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
+		err = rows.Scan(&data.ID, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
 		if err != nil {
 			return nil, lib.WrapErr("row scan:", err)
 		}

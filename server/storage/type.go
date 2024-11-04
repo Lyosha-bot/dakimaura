@@ -1,6 +1,8 @@
 package storage
 
-import "io"
+import (
+	"io"
+)
 
 const (
 	ProductInsertQuery      = "INSERT INTO products (category, name, price, material, brand, produce_time, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
@@ -14,6 +16,7 @@ type User struct {
 }
 
 type Product struct {
+	ID          uint64 `json:"id"`
 	Category    string `json:"category"`
 	Name        string `json:"name"`
 	Price       uint64 `json:"price"`

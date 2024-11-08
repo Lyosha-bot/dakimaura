@@ -1,0 +1,2 @@
+-- migrate
+ALTER TABLE users ADD COLUMN email VARCHAR(20) NOT NULL;

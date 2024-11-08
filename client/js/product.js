@@ -1,5 +1,5 @@
 const images_endpoint = "http://localhost:8073/images/";
-const api_endpoint = "http://localhost:8073/api/";
+const api_endpoint = "http://localhost:8073/api/get-product?id=";
 
 const imageElem = document.getElementById("image");
 const nameElem = document.getElementById("name");
@@ -19,7 +19,7 @@ function formatNumber(number) {
 
 async function GetProduct(id) {
     try {
-        const response = await fetch(`${api_endpoint}get-product?id=${id}`, {
+        const response = await fetch(`${api_endpoint}${id}`, {
             method: 'GET'
         })
 

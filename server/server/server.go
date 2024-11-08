@@ -2,8 +2,10 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"golang.org/x/crypto/bcrypt"
 	"goserver/lib"
 	"goserver/storage"
 	"goserver/storage/database"
@@ -36,7 +38,7 @@ func NewServer(port string) (*Server, error) {
 
 	dbClient, err := database.NewClient(credentialsDB, credentialsImages)
 	if err != nil {
-		return nil, lib.WrapErr("Minio init fail:", err)
+		return nil, lib.WrapErr("database init fail:", err)
 	}
 
 	return &Server{
@@ -50,9 +52,9 @@ func (s *Server) Process() error {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/add-product", s.addProduct).Methods("POST")
-	router.HandleFunc("/get-product", s.getProduct).Methods("GET")
-	router.HandleFunc("/get-category", s.getCategory).Methods("GET")
-
+	router.HandleFunc("/get-product", s.product).Methods("GET")
+	router.HandleFunc("/get-category", s.category).Methods("GET")
+	router.HandleFunc("/register", s.register).Methods("POST")
 	log.Println("Server is up")
 
 	err := http.ListenAndServe(":"+s.port, cors.AllowAll().Handler(router))
@@ -109,7 +111,7 @@ func (s *Server) addProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) getProduct(w http.ResponseWriter, r *http.Request) {
+func (s *Server) product(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
@@ -120,7 +122,7 @@ func (s *Server) getProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := s.Database.GetProduct(id)
+	product, err := s.Database.Product(id)
 	if err != nil {
 		log.Println("get product:", err)
 		http.Error(w, "Error encoding category:", http.StatusInternalServerError)
@@ -138,9 +140,9 @@ func (s *Server) getProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) getCategory(w http.ResponseWriter, r *http.Request) {
+func (s *Server) category(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("category")
-	products, err := s.Database.GetCategory(name)
+	products, err := s.Database.Category(name)
 	if err != nil {
 		log.Println("get category:", err)
 		http.Error(w, "Error getting category:", http.StatusInternalServerError)
@@ -152,6 +154,53 @@ func (s *Server) getCategory(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("encode category:", err)
 		http.Error(w, "Error encoding category:", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func invalidUser(user storage.User) error {
+	if user.Username == "" {
+		return errors.New("no username")
+	}
+	if user.Password == "" {
+		return errors.New("no password")
+	}
+	return nil
+}
+
+func (s *Server) register(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		log.Println("parse multipart form:", err)
+		http.Error(w, "Couldn't parse form", http.StatusBadRequest)
+		return
+	}
+
+	data := storage.User{
+		Username: r.FormValue("username"),
+		Password: r.FormValue("password"),
+	}
+
+	if err := invalidUser(data); err != nil {
+		log.Println("invalid user data:", err)
+		w.Write([]byte("invalid user data"))
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println("hash password:", err)
+		w.Write([]byte("hash password error"))
+		return
+	}
+
+	data.Password = string(hash)
+
+	err = s.Database.InsertUser(data)
+	if err != nil {
+		log.Println("hash password:", err)
+		w.Write([]byte("insert user error"))
 		return
 	}
 

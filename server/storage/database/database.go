@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"goserver/lib"
@@ -19,6 +20,34 @@ type Client struct {
 func createContext() (context.Context, context.CancelFunc) { // Бесполезно, но удобно
 	return context.WithTimeout(context.Background(), 5*time.Second)
 }
+
+//func migrateDatabase(conn *pgx.Conn) error {
+//	ctx, cancel := createContext()
+//	defer cancel()
+//
+//	migrator, err := migrate.NewMigrator(ctx, conn, "schema_version")
+//	if err != nil {
+//		return lib.WrapErr("migrator:", err)
+//	}
+//
+//	fsys := os.DirFS("migrations")
+//
+//	log.Println(fsys)
+//
+//	err = migrator.LoadMigrations(fsys)
+//	if err != nil {
+//		return lib.WrapErr("load migrations:", err)
+//	}
+//
+//	err = migrator.Migrate(ctx)
+//	if err != nil {
+//		return lib.WrapErr("migration:", err)
+//	}
+//
+//	_, err = migrator.GetCurrentVersion(ctx)
+//
+//	return lib.WrapIfErr("get migration version:", err)
+//}
 
 func NewClient(credentialsDB, credentialsImages storage.Credentials) (storage.Database, error) {
 	ctx, cancel := createContext()
@@ -43,8 +72,20 @@ func NewClient(credentialsDB, credentialsImages storage.Credentials) (storage.Da
 		return nil, lib.WrapErr("database pool:", err)
 	}
 
+	//conn, err := pool.Acquire(ctx)
+	//if err != nil {
+	//	return nil, lib.WrapErr("acquire:", err)
+	//}
+	//defer conn.Release()
+	//
+	//if err = migrateDatabase(conn.Conn()); err != nil {
+	//	return nil, lib.WrapErr("migration failed:", err)
+	//}
+
 	return &Client{pool: pool, Images: imagesClient}, nil
 }
+
+// Товары
 
 func (c *Client) InsertProduct(product storage.Product, imageData storage.FileData) error {
 	ctx, cancel := createContext()
@@ -78,7 +119,7 @@ func (c *Client) InsertProduct(product storage.Product, imageData storage.FileDa
 	return nil
 }
 
-func (c *Client) GetProduct(id uint64) (*storage.Product, error) {
+func (c *Client) Product(id uint64) (*storage.Product, error) {
 	ctx, cancel := createContext()
 	defer cancel()
 
@@ -93,14 +134,10 @@ func (c *Client) GetProduct(id uint64) (*storage.Product, error) {
 	var data storage.Product
 	err = row.Scan(&data.ID, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
 
-	if err != nil {
-		return nil, lib.WrapErr("row scan:", err)
-	}
-
-	return &data, lib.WrapIfErr("load image:", err)
+	return &data, lib.WrapIfErr("row scan:", err)
 }
 
-func (c *Client) GetCategory(category string) ([]storage.Product, error) {
+func (c *Client) Category(category string) ([]storage.Product, error) {
 	ctx, cancel := createContext()
 	defer cancel()
 
@@ -127,4 +164,44 @@ func (c *Client) GetCategory(category string) ([]storage.Product, error) {
 		res = append(res, data)
 	}
 	return res, nil
+}
+
+// Пользователи
+
+func (c *Client) InsertUser(user storage.User) error {
+	ctx, cancel := createContext()
+	defer cancel()
+
+	conn, err := c.pool.Acquire(ctx)
+	if err != nil {
+		return lib.WrapErr("acquire:", err)
+	}
+
+	row := conn.QueryRow(ctx, storage.UserInsertQuery, user.Username, user.Password)
+
+	var id uint
+	err = row.Scan(&id)
+
+	return lib.WrapIfErr("insert user:", err)
+}
+
+func (c *Client) User(username string) (*storage.User, error) {
+	if username == "" {
+		return nil, errors.New("no username")
+	}
+
+	ctx, cancel := createContext()
+	defer cancel()
+
+	conn, err := c.pool.Acquire(ctx)
+	if err != nil {
+		return nil, lib.WrapErr("acquire:", err)
+	}
+
+	row := conn.QueryRow(ctx, storage.UserGetQuery, username)
+
+	var data storage.User
+	err = row.Scan(&data.Username, &data.Password)
+
+	return &data, lib.WrapIfErr("row scan:", err)
 }

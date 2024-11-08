@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="../css/header-footer.css">
-    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/register.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,12 +30,13 @@
         </div>
     </header>
     <main class="regular-font">
-        <form action="" method="get">
-            <h3 class="medium-font">Вход</h3>
+        <form action="" method="post">
+            <h3 class="medium-font">Регистрация</h3>
             <input class="text-input" type="text" name="username" placeholder="Логин" required/>
-            <input class="text-input" type="password" name="password" placeholder="Пароль" required/>
-            <input class="login-button bold-font" type="submit" value="Войти">
-            <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+            <input class="text-input" type="password" name="password" placeholder="Пароль (не менее 5 символов)" required/>
+            <p id="fail-message" style="display: none;">Ошибка регистрации: Вы НИГЕР</p>
+            <input class="login-button bold-font" type="submit" value="Зарегистрироваться">
+            <p>Уже есть аккаунт? <a href="login.html">Войти</a></p>
         </form>
     </main>
     <footer class="regular-font">
@@ -70,5 +71,7 @@
             </div>
         </div>
     </footer>
+
+    <script src="../js/register.js"></script>
 </body>
 </html>

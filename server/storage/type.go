@@ -8,6 +8,8 @@ const (
 	ProductInsertQuery      = "INSERT INTO products (category, name, price, material, brand, produce_time, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 	ProductGetQuery         = "SELECT * FROM products WHERE id = $1 LIMIT 1"
 	ProductGetCategoryQuery = "SELECT * FROM products WHERE category = $1"
+	UserInsertQuery         = "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
+	UserGetQuery            = "SELECT * FROM users WHERE username = $1 LIMIT 1"
 )
 
 type User struct {
@@ -46,6 +48,8 @@ type Images interface {
 
 type Database interface {
 	InsertProduct(product Product, imageData FileData) error
-	GetProduct(id uint64) (*Product, error)
-	GetCategory(category string) ([]Product, error)
+	Product(id uint64) (*Product, error)
+	Category(category string) ([]Product, error)
+	InsertUser(user User) error
+	User(username string) (*User, error)
 }

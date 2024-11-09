@@ -20,12 +20,9 @@
                 <img class="logo-img" src="assets/img/logo-black.png" alt="">
             </a>
         </div>
-        <div class="header-nav regular-font">
+        <div id="header-nav" class="header-nav regular-font">
             <a class="header-nav-tab" href="home.html">Главная</a>
-            <!-- <a class="header-nav-tab" href="">Каталог</a> -->
             <a class="header-nav-tab" href="about.html">О нас</a>
-            <a class="header-nav-tab" href="login.html">Вход/Регистрация</a>
-            <!-- <a class="header-nav-tab" href="">Войти</a> -->
         </div>
     </header>
     <main class="regular-font">
@@ -96,6 +93,18 @@
             </div>
         </div>
     </footer>
+
+    <div id="logout-wrapper" style="display: none;">
+        <div class="logout-window">
+            <h5 class="logout-title medium-font">Выйти из аккаунта?</h5>
+            <div class="logout-menu regular-font">
+                <button id="logout" class="logout-choice">Выйти</button>
+                <button id="cancel" class="logout-choice">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/fetch-login.js"></script>
     <script src="../js/product.js"></script>
 </body>
 </html>

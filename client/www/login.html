@@ -23,17 +23,15 @@
         </div>
         <div class="header-nav regular-font">
             <a class="header-nav-tab" href="home.html">Главная</a>
-            <!-- <a class="header-nav-tab" href="">Каталог</a> -->
             <a class="header-nav-tab" href="about.html">О нас</a>
-            <a class="header-nav-tab" href="login.html">Вход/Регистрация</a>
-            <!-- <a class="header-nav-tab" href="">Войти</a> -->
         </div>
     </header>
     <main class="regular-font">
-        <form action="" method="get">
+        <form action="" method="post">
             <h3 class="medium-font">Вход</h3>
             <input class="text-input" type="text" name="username" placeholder="Логин" required/>
             <input class="text-input" type="password" name="password" placeholder="Пароль" required/>
+            <p id="fail-message" style="display: none;">Ошибка регистрации: Вы НИГЕР</p>
             <input class="login-button bold-font" type="submit" value="Войти">
             <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
         </form>
@@ -70,5 +68,7 @@
             </div>
         </div>
     </footer>
+
+    <script src="../js/login.js"></script>
 </body>
 </html>

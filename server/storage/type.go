@@ -6,13 +6,14 @@ import (
 
 const (
 	ProductInsertQuery      = "INSERT INTO products (category, name, price, material, brand, produce_time, image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
-	ProductGetQuery         = "SELECT * FROM products WHERE id = $1 LIMIT 1"
-	ProductGetCategoryQuery = "SELECT * FROM products WHERE category = $1"
+	ProductGetQuery         = "SELECT id, category, name, price, material, brand, produce_time, image FROM products WHERE id = $1 LIMIT 1"
+	ProductGetCategoryQuery = "SELECT id, category, name, price, material, brand, produce_time, image FROM products WHERE category = $1"
 	UserInsertQuery         = "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
-	UserGetQuery            = "SELECT * FROM users WHERE username = $1 LIMIT 1"
+	UserGetQuery            = "SELECT id, username, password FROM users WHERE username = $1 LIMIT 1"
 )
 
 type User struct {
+	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }

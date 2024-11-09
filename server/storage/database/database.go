@@ -201,7 +201,7 @@ func (c *Client) User(username string) (*storage.User, error) {
 	row := conn.QueryRow(ctx, storage.UserGetQuery, username)
 
 	var data storage.User
-	err = row.Scan(&data.Username, &data.Password)
+	err = row.Scan(&data.ID, &data.Username, &data.Password)
 
 	return &data, lib.WrapIfErr("row scan:", err)
 }

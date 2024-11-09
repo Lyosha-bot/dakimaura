@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"golang.org/x/crypto/bcrypt"
@@ -13,7 +14,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
+
+const tokenDuration = time.Hour * 24
 
 type Server struct {
 	port     string
@@ -55,6 +59,10 @@ func (s *Server) Process() error {
 	router.HandleFunc("/get-product", s.product).Methods("GET")
 	router.HandleFunc("/get-category", s.category).Methods("GET")
 	router.HandleFunc("/register", s.register).Methods("POST")
+	router.HandleFunc("/login", s.login).Methods("POST")
+	router.HandleFunc("/fetch", s.fetch).Methods("GET")
+	router.HandleFunc("/logout", s.logout).Methods("POST")
+
 	log.Println("Server is up")
 
 	err := http.ListenAndServe(":"+s.port, cors.AllowAll().Handler(router))
@@ -164,16 +172,41 @@ func invalidUser(user storage.User) error {
 	if user.Username == "" {
 		return errors.New("no username")
 	}
+
+	if len(user.Username) < 5 {
+		return errors.New("too short username")
+	}
+
 	if user.Password == "" {
 		return errors.New("no password")
 	}
+
+	if len(user.Password) < 5 {
+		return errors.New("too short password")
+	}
+
 	return nil
+}
+
+func newToken(user *storage.User, secret string, duration time.Duration) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = user.ID
+	claims["username"] = user.Username
+	claims["exp"] = time.Now().Add(duration).Unix()
+
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", lib.WrapErr("token sign:", err)
+	}
+	return tokenString, nil
 }
 
 func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		log.Println("parse multipart form:", err)
-		http.Error(w, "Couldn't parse form", http.StatusBadRequest)
+		http.Error(w, "Форма неверно заполнена", http.StatusBadRequest)
 		return
 	}
 
@@ -184,14 +217,14 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 	if err := invalidUser(data); err != nil {
 		log.Println("invalid user data:", err)
-		w.Write([]byte("invalid user data"))
+		http.Error(w, "Данные неверно заполнены", http.StatusBadRequest)
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println("hash password:", err)
-		w.Write([]byte("hash password error"))
+		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
 		return
 	}
 
@@ -199,10 +232,126 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 	err = s.Database.InsertUser(data)
 	if err != nil {
-		log.Println("hash password:", err)
-		w.Write([]byte("insert user error"))
+		log.Println("insert user:", err)
+		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) login(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		log.Println("parse multipart form:", err)
+		http.Error(w, "Форма неверно заполнена", http.StatusBadRequest)
+		return
+	}
+
+	formData := storage.User{
+		Username: r.FormValue("username"),
+		Password: r.FormValue("password"),
+	}
+
+	if err := invalidUser(formData); err != nil {
+		log.Println("invalid user data:", err)
+		http.Error(w, "Данные неверно заполнены", http.StatusBadRequest)
+		return
+	}
+
+	user, err := s.Database.User(formData.Username)
+	if err != nil {
+		log.Println("incorrect user:", err)
+		http.Error(w, "Неверный логин или пароль", http.StatusBadRequest)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(formData.Password))
+	if err != nil {
+		log.Println("incorrect password:", err)
+		http.Error(w, "Неверный логин или пароль", http.StatusBadRequest)
+		return
+	}
+
+	token, err := newToken(user, os.Getenv("APP_SECRET"), tokenDuration)
+	if err != nil {
+		log.Println("token generation:", err)
+		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		Path:     "/",
+		Expires:  time.Now().Add(tokenDuration),
+		Secure:   false,
+		HttpOnly: true,
+	})
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
+	_, err := r.Cookie("auth_token")
+	if err != nil {
+		log.Println("get cookie:", err)
+		http.Error(w, "Нет токена", http.StatusBadRequest)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		Secure:   false,
+		HttpOnly: true,
+	})
+
+	log.Println("DELETED COOKIE")
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) fetch(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		log.Println("get cookie:", err)
+		http.Error(w, "Нет токена", http.StatusBadRequest)
+		return
+	}
+
+	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("APP_SECRET")), nil
+	})
+
+	if err != nil {
+		log.Println("parse token:", err)
+		http.Error(w, "Неверный токен", http.StatusBadRequest)
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		log.Println("token claims:", err)
+		http.Error(w, "Неверный токен", http.StatusBadRequest)
+		return
+	}
+
+	username, ok := claims["username"].(string)
+	if !ok {
+		log.Println("token username:", err)
+		http.Error(w, "Неверный токен", http.StatusBadRequest)
+		return
+	}
+
+	_, ok = claims["id"]
+	if !ok {
+		log.Println("token user id:", err)
+		http.Error(w, "Неверный токен", http.StatusBadRequest)
+		return
+	}
+
+	w.Write([]byte(username))
 	w.WriteHeader(http.StatusOK)
 }

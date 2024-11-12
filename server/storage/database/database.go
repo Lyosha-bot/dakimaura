@@ -27,7 +27,7 @@ func createContext() (context.Context, context.CancelFunc) { // Бесполез
 //
 //	migrator, err := migrate.NewMigrator(ctx, conn, "schema_version")
 //	if err != nil {
-//		return lib.WrapErr("migrator:", err)
+//		return lib.WrapErr("migrator", err)
 //	}
 //
 //	fsys := os.DirFS("migrations")
@@ -36,17 +36,17 @@ func createContext() (context.Context, context.CancelFunc) { // Бесполез
 //
 //	err = migrator.LoadMigrations(fsys)
 //	if err != nil {
-//		return lib.WrapErr("load migrations:", err)
+//		return lib.WrapErr("load migrations", err)
 //	}
 //
 //	err = migrator.Migrate(ctx)
 //	if err != nil {
-//		return lib.WrapErr("migration:", err)
+//		return lib.WrapErr("migration", err)
 //	}
 //
 //	_, err = migrator.GetCurrentVersion(ctx)
 //
-//	return lib.WrapIfErr("get migration version:", err)
+//	return lib.WrapIfErr("get migration version", err)
 //}
 
 func NewClient(credentialsDB, credentialsImages storage.Credentials) (storage.Database, error) {
@@ -57,7 +57,7 @@ func NewClient(credentialsDB, credentialsImages storage.Credentials) (storage.Da
 
 	imagesClient, err := images.NewClient(credentialsImages)
 	if err != nil {
-		return nil, lib.WrapErr("minio init:", err)
+		return nil, lib.WrapErr("minio init", err)
 	}
 
 	//Database
@@ -69,17 +69,17 @@ func NewClient(credentialsDB, credentialsImages storage.Credentials) (storage.Da
 	pool, err := pgxpool.New(ctx, url)
 
 	if err != nil {
-		return nil, lib.WrapErr("database pool:", err)
+		return nil, lib.WrapErr("database pool", err)
 	}
 
 	//conn, err := pool.Acquire(ctx)
 	//if err != nil {
-	//	return nil, lib.WrapErr("acquire:", err)
+	//	return nil, lib.WrapErr("acquire", err)
 	//}
 	//defer conn.Release()
 	//
 	//if err = migrateDatabase(conn.Conn()); err != nil {
-	//	return nil, lib.WrapErr("migration failed:", err)
+	//	return nil, lib.WrapErr("migration failed", err)
 	//}
 
 	return &Client{pool: pool, Images: imagesClient}, nil
@@ -93,13 +93,13 @@ func (c *Client) InsertProduct(product storage.Product, imageData storage.FileDa
 
 	conn, err := c.pool.Acquire(ctx)
 	if err != nil {
-		return lib.WrapErr("acquire:", err)
+		return lib.WrapErr("acquire", err)
 	}
 	defer conn.Release()
 
 	err = c.Images.UploadImage(imageData)
 	if err != nil {
-		return lib.WrapErr("insert product:", err)
+		return lib.WrapErr("insert product", err)
 	}
 
 	product.Image = imageData.Name
@@ -113,7 +113,7 @@ func (c *Client) InsertProduct(product storage.Product, imageData storage.FileDa
 
 	if err != nil {
 		_ = c.Images.DeleteImage(imageData.Name)
-		return lib.WrapErr("insert:", err)
+		return lib.WrapErr("insert", err)
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (c *Client) Product(id uint64) (*storage.Product, error) {
 
 	conn, err := c.pool.Acquire(ctx)
 	if err != nil {
-		return nil, lib.WrapErr("acquire:", err)
+		return nil, lib.WrapErr("acquire", err)
 	}
 	defer conn.Release()
 
@@ -134,7 +134,7 @@ func (c *Client) Product(id uint64) (*storage.Product, error) {
 	var data storage.Product
 	err = row.Scan(&data.ID, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
 
-	return &data, lib.WrapIfErr("row scan:", err)
+	return &data, lib.WrapIfErr("row scan", err)
 }
 
 func (c *Client) Category(category string) ([]storage.Product, error) {
@@ -143,13 +143,13 @@ func (c *Client) Category(category string) ([]storage.Product, error) {
 
 	conn, err := c.pool.Acquire(ctx)
 	if err != nil {
-		return nil, lib.WrapErr("acquire:", err)
+		return nil, lib.WrapErr("acquire", err)
 	}
 	defer conn.Release()
 
 	rows, err := conn.Query(ctx, storage.ProductGetCategoryQuery, category)
 	if err != nil {
-		return nil, lib.WrapErr("category query:", err)
+		return nil, lib.WrapErr("category query", err)
 	}
 
 	res := make([]storage.Product, 0, 1)
@@ -158,7 +158,7 @@ func (c *Client) Category(category string) ([]storage.Product, error) {
 	for rows.Next() {
 		err = rows.Scan(&data.ID, &data.Category, &data.Name, &data.Price, &data.Material, &data.Brand, &data.ProduceTime, &data.Image)
 		if err != nil {
-			return nil, lib.WrapErr("row scan:", err)
+			return nil, lib.WrapErr("row scan", err)
 		}
 
 		res = append(res, data)
@@ -174,7 +174,7 @@ func (c *Client) InsertUser(user storage.User) error {
 
 	conn, err := c.pool.Acquire(ctx)
 	if err != nil {
-		return lib.WrapErr("acquire:", err)
+		return lib.WrapErr("acquire", err)
 	}
 	defer conn.Release()
 
@@ -183,7 +183,7 @@ func (c *Client) InsertUser(user storage.User) error {
 	var id uint
 	err = row.Scan(&id)
 
-	return lib.WrapIfErr("insert user:", err)
+	return lib.WrapIfErr("insert user", err)
 }
 
 func (c *Client) User(username string) (*storage.User, error) {
@@ -196,7 +196,7 @@ func (c *Client) User(username string) (*storage.User, error) {
 
 	conn, err := c.pool.Acquire(ctx)
 	if err != nil {
-		return nil, lib.WrapErr("acquire:", err)
+		return nil, lib.WrapErr("acquire", err)
 	}
 	defer conn.Release()
 
@@ -205,5 +205,5 @@ func (c *Client) User(username string) (*storage.User, error) {
 	var data storage.User
 	err = row.Scan(&data.ID, &data.Username, &data.Password)
 
-	return &data, lib.WrapIfErr("row scan:", err)
+	return &data, lib.WrapIfErr("row scan", err)
 }

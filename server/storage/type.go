@@ -10,6 +10,8 @@ const (
 	ProductGetCategoryQuery = "SELECT id, category, name, price, material, brand, produce_time, image FROM products WHERE category = $1"
 	UserInsertQuery         = "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
 	UserGetQuery            = "SELECT id, username, password FROM users WHERE username = $1 LIMIT 1"
+
+	BucketPolicy = "{\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n            \"Effect\": \"Allow\",\n            \"Principal\": {\n                \"AWS\": [\n                    \"*\"\n                ]\n            },\n            \"Action\": [\n                \"s3:GetBucketLocation\",\n                \"s3:ListBucket\",\n                \"s3:ListBucketMultipartUploads\"\n            ],\n            \"Resource\": [\n                \"arn:aws:s3:::images\"\n            ]\n        },\n        {\n            \"Effect\": \"Allow\",\n            \"Principal\": {\n                \"AWS\": [\n                    \"*\"\n                ]\n            },\n            \"Action\": [\n                \"s3:DeleteObject\",\n                \"s3:GetObject\",\n                \"s3:ListMultipartUploadParts\",\n                \"s3:PutObject\",\n                \"s3:AbortMultipartUpload\"\n            ],\n            \"Resource\": [\n                \"arn:aws:s3:::images/*\"\n            ]\n        }\n    ]\n}"
 )
 
 type User struct {

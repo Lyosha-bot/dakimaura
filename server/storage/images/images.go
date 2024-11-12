@@ -26,7 +26,7 @@ func NewClient(credentialsImages storage.Credentials) (storage.Images, error) {
 		Secure: false,
 	})
 	if err != nil {
-		return nil, lib.WrapErr("minio connection failed: ", err)
+		return nil, lib.WrapErr("minio connection", err)
 	}
 
 	ctx, cancel := createContext()
@@ -34,13 +34,18 @@ func NewClient(credentialsImages storage.Credentials) (storage.Images, error) {
 
 	found, err := client.BucketExists(ctx, credentialsImages.Catalog)
 	if err != nil {
-		return nil, lib.WrapErr("minio bucket check failed: ", err)
+		return nil, lib.WrapErr("minio bucket check", err)
 	}
 
 	if !found {
 		err = client.MakeBucket(ctx, credentialsImages.Catalog, minio.MakeBucketOptions{})
 		if err != nil {
-			return nil, lib.WrapErr("minio bucket check failed: ", err)
+			return nil, lib.WrapErr("minio bucket create", err)
+		}
+
+		err = client.SetBucketPolicy(ctx, credentialsImages.Catalog, storage.BucketPolicy)
+		if err != nil {
+			return nil, lib.WrapErr("minio bucket set policy", err)
 		}
 	}
 

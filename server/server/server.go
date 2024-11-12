@@ -42,7 +42,7 @@ func NewServer(port string) (*Server, error) {
 
 	dbClient, err := database.NewClient(credentialsDB, credentialsImages)
 	if err != nil {
-		return nil, lib.WrapErr("database init fail:", err)
+		return nil, lib.WrapErr("database init fail", err)
 	}
 
 	return &Server{
@@ -72,14 +72,14 @@ func (s *Server) Process() error {
 func (s *Server) addProduct(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		log.Println("parse multipart form:", err)
+		log.Println("parse multipart form", err)
 		http.Error(w, "Couldn't parse form", http.StatusBadRequest)
 		return
 	}
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		log.Println("form file:", err)
+		log.Println("form file", err)
 		http.Error(w, "Couldn't get file", http.StatusBadRequest)
 		return
 	}
@@ -88,7 +88,7 @@ func (s *Server) addProduct(w http.ResponseWriter, r *http.Request) {
 	price, err := strconv.ParseUint(r.FormValue("price"), 10, 64)
 
 	if err != nil {
-		log.Println("price parse:", err)
+		log.Println("price parse", err)
 		http.Error(w, "Couldn't parse uint", http.StatusBadRequest)
 		return
 	}
@@ -111,8 +111,8 @@ func (s *Server) addProduct(w http.ResponseWriter, r *http.Request) {
 
 	err = s.Database.InsertProduct(data, fileData)
 	if err != nil {
-		log.Println("insert product:", err)
-		http.Error(w, "Error inserting product:", http.StatusInternalServerError)
+		log.Println("insert product", err)
+		http.Error(w, "Error inserting product", http.StatusInternalServerError)
 		return
 	}
 
@@ -125,23 +125,23 @@ func (s *Server) product(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(idStr, 10, 64)
 
 	if err != nil {
-		log.Println("parse uint:", err)
-		http.Error(w, "Parse uint:", http.StatusInternalServerError)
+		log.Println("parse uint", err)
+		http.Error(w, "Parse uint", http.StatusInternalServerError)
 		return
 	}
 
 	product, err := s.Database.Product(id)
 	if err != nil {
-		log.Println("get product:", err)
-		http.Error(w, "Error encoding category:", http.StatusInternalServerError)
+		log.Println("get product", err)
+		http.Error(w, "Error encoding category", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(product)
 	if err != nil {
-		log.Println("encode product:", err)
-		http.Error(w, "Error encoding product:", http.StatusInternalServerError)
+		log.Println("encode product", err)
+		http.Error(w, "Error encoding product", http.StatusInternalServerError)
 		return
 	}
 
@@ -152,16 +152,16 @@ func (s *Server) category(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("category")
 	products, err := s.Database.Category(name)
 	if err != nil {
-		log.Println("get category:", err)
-		http.Error(w, "Error getting category:", http.StatusInternalServerError)
+		log.Println("get category", err)
+		http.Error(w, "Error getting category", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(products)
 	if err != nil {
-		log.Println("encode category:", err)
-		http.Error(w, "Error encoding category:", http.StatusInternalServerError)
+		log.Println("encode category", err)
+		http.Error(w, "Error encoding category", http.StatusInternalServerError)
 		return
 	}
 
@@ -191,14 +191,14 @@ func newToken(user *storage.User, secret string, duration time.Duration) (string
 
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
-		return "", lib.WrapErr("token sign:", err)
+		return "", lib.WrapErr("token sign", err)
 	}
 	return tokenString, nil
 }
 
 func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		log.Println("parse multipart form:", err)
+		log.Println("parse multipart form", err)
 		http.Error(w, "Форма неверно заполнена", http.StatusBadRequest)
 		return
 	}
@@ -209,14 +209,14 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := invalidUser(data); err != nil {
-		log.Println("invalid user data:", err)
+		log.Println("invalid user data", err)
 		http.Error(w, "Данные неверно заполнены", http.StatusBadRequest)
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println("hash password:", err)
+		log.Println("hash password", err)
 		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
 		return
 	}
@@ -224,7 +224,7 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 	err = s.Database.InsertUser(data)
 	if err != nil {
-		log.Println("insert user:", err)
+		log.Println("insert user", err)
 		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
 		return
 	}
@@ -234,7 +234,7 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		log.Println("parse multipart form:", err)
+		log.Println("parse multipart form", err)
 		http.Error(w, "Форма неверно заполнена", http.StatusBadRequest)
 		return
 	}
@@ -245,28 +245,28 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := invalidUser(formData); err != nil {
-		log.Println("invalid user data:", err)
+		log.Println("invalid user data", err)
 		http.Error(w, "Данные неверно заполнены", http.StatusBadRequest)
 		return
 	}
 
 	user, err := s.Database.User(formData.Username)
 	if err != nil {
-		log.Println("incorrect user:", err)
+		log.Println("incorrect user", err)
 		http.Error(w, "Неверный логин или пароль", http.StatusBadRequest)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(formData.Password))
 	if err != nil {
-		log.Println("incorrect password:", err)
+		log.Println("incorrect password", err)
 		http.Error(w, "Неверный логин или пароль", http.StatusBadRequest)
 		return
 	}
 
 	token, err := newToken(user, os.Getenv("APP_SECRET"), tokenDuration)
 	if err != nil {
-		log.Println("token generation:", err)
+		log.Println("token generation", err)
 		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
 		return
 	}
@@ -286,7 +286,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("auth_token")
 	if err != nil {
-		log.Println("get cookie:", err)
+		log.Println("get cookie", err)
 		http.Error(w, "Нет токена", http.StatusBadRequest)
 		return
 	}
@@ -308,7 +308,7 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 func (s *Server) fetch(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth_token")
 	if err != nil {
-		log.Println("get cookie:", err)
+		log.Println("get cookie", err)
 		http.Error(w, "Нет токена", http.StatusBadRequest)
 		return
 	}
@@ -318,28 +318,28 @@ func (s *Server) fetch(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		log.Println("parse token:", err)
+		log.Println("parse token", err)
 		http.Error(w, "Неверный токен", http.StatusBadRequest)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		log.Println("token claims:", err)
+		log.Println("token claims", err)
 		http.Error(w, "Неверный токен", http.StatusBadRequest)
 		return
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		log.Println("token username:", err)
+		log.Println("token username", err)
 		http.Error(w, "Неверный токен", http.StatusBadRequest)
 		return
 	}
 
 	_, ok = claims["id"]
 	if !ok {
-		log.Println("token user id:", err)
+		log.Println("token user id", err)
 		http.Error(w, "Неверный токен", http.StatusBadRequest)
 		return
 	}

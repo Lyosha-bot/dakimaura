@@ -5,7 +5,7 @@ form.addEventListener('submit', async (e) => {
     const formData = new FormData(e.target);
 
     try {
-        const response = await fetch('http://localhost:8074/add-product', {
+        const response = await fetch('http://localhost:8073/api/add-product', {
             method: 'POST',
             body: formData
         })

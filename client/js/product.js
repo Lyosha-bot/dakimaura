@@ -43,6 +43,8 @@ async function LoadProduct(id) {
         return;
     }
 
+    document.title = `Dakimaura | ${product.name}`;
+
     imageElem.src = `${images_endpoint}${product.image}`;
     nameElem.innerHTML = `Дакимакура ${product.name}`;
     IDElem.innerHTML = `ID товара ${product.id}`;

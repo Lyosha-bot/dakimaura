@@ -1,8 +1,9 @@
 const images_endpoint = "http://localhost:8073/images/";
 const api_endpoint = "http://localhost:8073/api/";
-const category_list = ["Новинки сезона"];
+const category_list = ["Новинки сезона", "Кошкодевочки", "Мужские персонажи"];
 
 const catalog = document.getElementsByClassName("catalog-section")[0];
+const load_smoke = document.getElementById("load-smoke");
 
 function formatNumber(number) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -60,6 +61,8 @@ async function FillCatalog() {
 
         catalog.innerHTML += card;
     }
+
+    load_smoke.style="opacity:0;"
 }
 
 FillCatalog();

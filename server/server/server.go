@@ -169,16 +169,9 @@ func (s *Server) category(w http.ResponseWriter, r *http.Request) {
 }
 
 func invalidUser(user storage.User) error {
-	if user.Username == "" {
-		return errors.New("no username")
-	}
 
 	if len(user.Username) < 5 {
 		return errors.New("too short username")
-	}
-
-	if user.Password == "" {
-		return errors.New("no password")
 	}
 
 	if len(user.Password) < 5 {
@@ -227,7 +220,6 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Ошибка сервера, попробуйте еще раз", http.StatusInternalServerError)
 		return
 	}
-
 	data.Password = string(hash)
 
 	err = s.Database.InsertUser(data)

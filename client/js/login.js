@@ -6,18 +6,21 @@ const form = document.forms[0];
 
 let can_click = true;
 
+function checkValidData(formdata) {
+    return formdata.get("username").length >= 5 && formdata.get("password").length >= 5
+}
+
 async function Login(formdata) {
+    if (!checkValidData(formdata)) {
+        return {success: false, err: "Некорректный логин или пароль"};
+    }
+
     const response = await fetch(api_endpoint, {
         method: 'POST',
         body: formdata
     })
 
-
-    if (response.ok) {
-        return {success: true, err: null};
-    }
-
-    return {success: false, err: await response.text()};
+    return {success: response.ok, err: await response.text()};
 }
 
 async function Submit(e) {
@@ -33,12 +36,12 @@ async function Submit(e) {
 
     const formData = new FormData(e.target);
 
-    let result = await Login(formData);
+    let response = await Login(formData);
 
-    if (result.success) {
+    if (response.success) {
         window.location.href = '/home.html';
     } else {
-        fail_p.innerHTML = result.err;
+        fail_p.innerHTML = response.err;
         fail_p.style = "display: block;";
     }
 

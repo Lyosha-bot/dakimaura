@@ -1,6 +1,8 @@
 const images_endpoint = "http://localhost:8073/images/";
 const api_endpoint = "http://localhost:8073/api/get-product?id=";
 
+const load_smoke = document.getElementById("load-smoke");
+
 const imageElem = document.getElementById("image");
 const nameElem = document.getElementById("name");
 const IDElem = document.getElementById("id");
@@ -53,6 +55,8 @@ async function LoadProduct(id) {
     materialElem.innerHTML = product.material;
     brandElem.innerHTML = product.brand;
     timeElem.innerHTML = product.produce_time;
+
+    load_smoke.style="opacity:0;"
 }
 
 if (productId) {

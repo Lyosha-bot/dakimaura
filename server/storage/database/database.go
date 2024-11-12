@@ -176,6 +176,7 @@ func (c *Client) InsertUser(user storage.User) error {
 	if err != nil {
 		return lib.WrapErr("acquire:", err)
 	}
+	defer conn.Release()
 
 	row := conn.QueryRow(ctx, storage.UserInsertQuery, user.Username, user.Password)
 
@@ -197,6 +198,7 @@ func (c *Client) User(username string) (*storage.User, error) {
 	if err != nil {
 		return nil, lib.WrapErr("acquire:", err)
 	}
+	defer conn.Release()
 
 	row := conn.QueryRow(ctx, storage.UserGetQuery, username)
 
